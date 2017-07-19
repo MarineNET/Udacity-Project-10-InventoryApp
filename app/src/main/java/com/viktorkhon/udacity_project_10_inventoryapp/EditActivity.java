@@ -14,6 +14,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,6 +34,12 @@ public class EditActivity extends AppCompatActivity{
 
     private static final int READ_REQUEST_CODE = 42;
 
+    TextView addImage;
+    EditText itemName;
+    EditText price;
+    TextView quantity;
+    Button decrease;
+    Button increase;
     ImageView mImageView;
 
     @Override
@@ -39,7 +47,12 @@ public class EditActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
-        TextView addImage = (TextView) findViewById(R.id.add_image);
+        addImage = (TextView) findViewById(R.id.add_image);
+        itemName = (EditText) findViewById(R.id.et_item_name);
+        price = (EditText) findViewById(R.id.et_price);
+        quantity = (TextView) findViewById(R.id.et_quantity);
+        decrease = (Button) findViewById(R.id.bn_decrease_by_1);
+        increase = (Button) findViewById(R.id.bn_increase_by_1);
         mImageView = (ImageView) findViewById(R.id.imageView);
 
         addImage.setOnClickListener(new View.OnClickListener() {
@@ -59,6 +72,31 @@ public class EditActivity extends AppCompatActivity{
                     startActivityForResult(intent, READ_REQUEST_CODE);
             }
         });
+
+        decrease.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int qty = Integer.parseInt(quantity.getText().toString());
+                qty--;
+                displayQty(qty);
+                if (qty < 0) {
+                    displayQty(0);
+                }
+            }
+        });
+
+        increase.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int qty = Integer.parseInt(quantity.getText().toString());
+                qty++;
+                displayQty(qty);
+            }
+        });
+    }
+
+    public void displayQty(int qty) {
+        quantity.setText(String.valueOf(qty));
     }
 
     @Override
