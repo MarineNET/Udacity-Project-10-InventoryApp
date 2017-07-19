@@ -73,6 +73,9 @@ public class EditActivity extends AppCompatActivity{
             }
         });
 
+        // Get the value of 'quantity' and convert it to Integer
+        // Decrease this value by 1 each time a button is pressed
+        // Make sure that the quantity doesn't go below '0'
         decrease.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -85,6 +88,8 @@ public class EditActivity extends AppCompatActivity{
             }
         });
 
+        // Get the value of 'quantity' and convert it to Integer
+        // Increase this value by 1 each time a button is pressed
         increase.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -95,6 +100,7 @@ public class EditActivity extends AppCompatActivity{
         });
     }
 
+    // Displays text to the Qty TextView
     public void displayQty(int qty) {
         quantity.setText(String.valueOf(qty));
     }
