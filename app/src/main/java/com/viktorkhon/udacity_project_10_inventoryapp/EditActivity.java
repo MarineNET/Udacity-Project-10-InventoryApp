@@ -18,10 +18,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract.InventoryEntry;
 
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract;
+import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryDbHelper;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -31,6 +33,8 @@ import java.io.InputStream;
  */
 
 public class EditActivity extends AppCompatActivity{
+
+    private InventoryDbHelper mDbHelper;
 
     private static final int READ_REQUEST_CODE = 42;
 
@@ -54,6 +58,7 @@ public class EditActivity extends AppCompatActivity{
         decrease = (Button) findViewById(R.id.bn_decrease_by_1);
         increase = (Button) findViewById(R.id.bn_increase_by_1);
         mImageView = (ImageView) findViewById(R.id.imageView);
+        mDbHelper = new InventoryDbHelper(this);
 
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,6 +110,27 @@ public class EditActivity extends AppCompatActivity{
         quantity.setText(String.valueOf(qty));
     }
 
+    public void insertItem() {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        String name = itemName.getText().toString().trim();
+        int priceInt = Integer.parseInt(price.getText().toString().trim());
+        int qtyInt = Integer.parseInt(quantity.getText().toString().trim());
+
+        ContentValues values = new ContentValues();
+        values.put(InventoryEntry.COLUMN_NAME, name);
+        values.put(InventoryEntry.COLUMN_PRICE, priceInt);
+        values.put(InventoryEntry.COLUMN_QTY, qtyInt);
+
+        long newId = db.insert(InventoryEntry.TABLE_NAME, null, values);
+
+        if (newId == -1) {
+            Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Pet saved with id: " + newId, Toast.LENGTH_SHORT).show();
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
@@ -147,7 +173,8 @@ public class EditActivity extends AppCompatActivity{
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                // do nothing
+                insertItem();
+                finish();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:

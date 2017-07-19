@@ -16,7 +16,7 @@
             android:layout_width="174dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="TextView"/>
+            android:text="Item name"/>
 
         <EditText
             android:id="@+id/et_item_name"
@@ -25,7 +25,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="Name"/>
+            android:hint="Name"/>
 
     </LinearLayout>
 
@@ -59,7 +59,7 @@
             android:id="@+id/textView2"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
-            android:text="TextView"/>
+            android:text="Price"/>
 
         <EditText
             android:id="@+id/et_price"
@@ -67,14 +67,14 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="Name"/>
+            android:hint="price"/>
 
         <TextView
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="TextView"/>
+            android:text="Quantity"/>
 
         <TextView
             android:id="@+id/et_quantity"

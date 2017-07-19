@@ -15,7 +15,7 @@ import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryDbHelper;
 
 public class CatalogActivity extends AppCompatActivity {
 
-    InventoryDbHelper mDbHelper = new InventoryDbHelper(this);
+    InventoryDbHelper mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +30,8 @@ public class CatalogActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        mDbHelper = new InventoryDbHelper(this);
 
         displayDb();
     }
@@ -49,17 +51,17 @@ public class CatalogActivity extends AppCompatActivity {
         TextView displayView = (TextView) findViewById(R.id.textView4);
 
         try {
-            displayView.setText("Currently there are " + cursor.getCount() + "objects in db");
+            displayView.setText("Currently there are " + cursor.getCount() + " objects in db\n");
             displayView.append(InventoryEntry.COLUMN_ID + " - " +
                     InventoryEntry.COLUMN_NAME + " - " +
                     InventoryEntry.COLUMN_QTY + " - " +
                     InventoryEntry.COLUMN_PRICE);
 
             while (cursor.moveToNext()) {
-                int id = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_ID));
-                String name = cursor.getString(cursor.getColumnIndex(InventoryEntry.TABLE_NAME));
-                int price = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRICE));
-                int qty = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_QTY));
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(InventoryEntry.COLUMN_ID));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(InventoryEntry.COLUMN_NAME));
+                int price = cursor.getInt(cursor.getColumnIndexOrThrow(InventoryEntry.COLUMN_PRICE));
+                int qty = cursor.getInt(cursor.getColumnIndexOrThrow(InventoryEntry.COLUMN_QTY));
 
                 displayView.append("\n" + id + " - " + name + " - " + price + " - " + qty);
             }
