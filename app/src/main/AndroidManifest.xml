@@ -21,5 +21,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".CatalogActivity" />
         </activity>
+        <provider
+            android:authorities="com.viktorkhon.udacity_project_10_inventoryapp"
+            android:name=".Data.InventoryProvider"
+            android:exported="false"/>
     </application>
 </manifest>
