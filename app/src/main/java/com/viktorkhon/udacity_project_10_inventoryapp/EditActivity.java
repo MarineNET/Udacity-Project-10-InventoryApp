@@ -1,18 +1,26 @@
 package com.viktorkhon.udacity_project_10_inventoryapp;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract.InventoryEntry;
 
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 /**
  * Created by Viktor Khon on 7/17/2017.
@@ -22,12 +30,16 @@ public class EditActivity extends AppCompatActivity{
 
     private static final int READ_REQUEST_CODE = 42;
 
+    ImageView mImageView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
         TextView addImage = (TextView) findViewById(R.id.add_image);
+        mImageView = (ImageView) findViewById(R.id.imageView);
+
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -45,6 +57,34 @@ public class EditActivity extends AppCompatActivity{
                     startActivityForResult(intent, READ_REQUEST_CODE);
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData) {
+
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
+        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
+        // response to some other intent, and the code below shouldn't run at all.
+
+        if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.
+            // Pull that URI using resultData.getData().
+            Uri uri;
+            InputStream image = null;
+            if (resultData != null) {
+                uri = resultData.getData();
+                try {
+                    image = getContentResolver().openInputStream(uri);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                Bitmap selectedImage = BitmapFactory.decodeStream(image);
+                mImageView.setImageBitmap(selectedImage);
+            }
+        }
     }
 
     @Override
