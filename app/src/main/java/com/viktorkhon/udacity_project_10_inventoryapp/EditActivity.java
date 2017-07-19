@@ -111,8 +111,6 @@ public class EditActivity extends AppCompatActivity{
     }
 
     public void insertItem() {
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
         String name = itemName.getText().toString().trim();
         int priceInt = Integer.parseInt(price.getText().toString().trim());
         int qtyInt = Integer.parseInt(quantity.getText().toString().trim());
@@ -122,9 +120,9 @@ public class EditActivity extends AppCompatActivity{
         values.put(InventoryEntry.COLUMN_PRICE, priceInt);
         values.put(InventoryEntry.COLUMN_QTY, qtyInt);
 
-        long newId = db.insert(InventoryEntry.TABLE_NAME, null, values);
+        Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
 
-        if (newId == -1) {
+        if (newId == null) {
             Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Pet saved with id: " + newId, Toast.LENGTH_SHORT).show();

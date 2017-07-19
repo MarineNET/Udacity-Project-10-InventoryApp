@@ -14,8 +14,6 @@ import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryDbHelper;
 
 public class CatalogActivity extends AppCompatActivity {
 
-    InventoryDbHelper mDbHelper;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,9 +27,6 @@ public class CatalogActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-        mDbHelper = new InventoryDbHelper(this);
-
         displayDb();
     }
 
@@ -42,10 +37,8 @@ public class CatalogActivity extends AppCompatActivity {
     }
 
     private void displayDb() {
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        Cursor cursor = db.query(InventoryEntry.TABLE_NAME,
-                null, null, null, null, null, null);
+        Cursor cursor = getContentResolver().query(InventoryEntry.CONTENT_URI,
+                null, null, null, null);
 
         TextView displayView = (TextView) findViewById(R.id.textView4);
 
