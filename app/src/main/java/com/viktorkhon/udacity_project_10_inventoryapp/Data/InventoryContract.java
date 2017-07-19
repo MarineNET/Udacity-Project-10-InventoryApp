@@ -13,6 +13,8 @@ public final class InventoryContract {
         public static final String TABLE_NAME = "inventory";
         public static final String COLUMN_ID = BaseColumns._ID;
         public static final String COLUMN_NAME = "name";
+        public static final String COLUMN_PRICE = "price";
+        public static final String COLUMN_QTY = "quantity";
         public static final String COLUMN_IMAGE = "image";
     }
 }
