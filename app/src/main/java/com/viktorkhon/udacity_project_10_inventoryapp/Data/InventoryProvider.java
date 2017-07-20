@@ -11,6 +11,8 @@ import android.net.Uri;
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract;
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract.InventoryEntry;
 
+import java.io.IOException;
+
 /**
  * Created by Viktor Khon on 7/19/2017.
  */
@@ -84,6 +86,17 @@ public class InventoryProvider extends ContentProvider {
     }
 
     private Uri insertItem(Uri uri, ContentValues contentValues) {
+
+        String name = contentValues.getAsString(InventoryEntry.COLUMN_NAME);
+        if (name.equals("")) {
+            throw new IllegalArgumentException("Please enter an item name");
+        }
+
+        Integer price = contentValues.getAsInteger(InventoryEntry.COLUMN_PRICE);
+        if (price != null && price < 0) {
+            throw new IllegalArgumentException("Please enter a price");
+        }
+
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         long id = db.insert(InventoryEntry.TABLE_NAME, null, contentValues);

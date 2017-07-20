@@ -3,8 +3,6 @@ package com.viktorkhon.udacity_project_10_inventoryapp;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -34,8 +32,6 @@ import java.io.InputStream;
 
 public class EditActivity extends AppCompatActivity{
 
-    private InventoryDbHelper mDbHelper;
-
     private static final int READ_REQUEST_CODE = 42;
 
     TextView addImage;
@@ -58,7 +54,6 @@ public class EditActivity extends AppCompatActivity{
         decrease = (Button) findViewById(R.id.bn_decrease_by_1);
         increase = (Button) findViewById(R.id.bn_increase_by_1);
         mImageView = (ImageView) findViewById(R.id.imageView);
-        mDbHelper = new InventoryDbHelper(this);
 
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,9 +105,16 @@ public class EditActivity extends AppCompatActivity{
         quantity.setText(String.valueOf(qty));
     }
 
+    private int confirmPrice() {
+        if (price.getText().toString().length() > 0) {
+            return Integer.parseInt(price.getText().toString().trim());
+        }
+        return 0;
+    }
+
     public void insertItem() {
         String name = itemName.getText().toString().trim();
-        int priceInt = Integer.parseInt(price.getText().toString().trim());
+        int priceInt = confirmPrice();
         int qtyInt = Integer.parseInt(quantity.getText().toString().trim());
 
         ContentValues values = new ContentValues();
