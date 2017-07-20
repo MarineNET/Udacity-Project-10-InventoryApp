@@ -110,7 +110,46 @@ public class InventoryProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
-        return 0;
+    public int update(Uri uri, ContentValues contentValues, String selection,
+                      String[] selectionArgs) {
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case INVENTORY:
+                return updateInventory(uri, contentValues, selection, selectionArgs);
+            case INVENTORY_ID:
+                selection = InventoryEntry._ID + "=?";
+                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                return updateInventory(uri, contentValues, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
+    }
+
+    private int updateInventory(Uri uri, ContentValues contentValues,
+                                String selection, String[] selectionArgs) {
+
+        if (contentValues.containsKey(InventoryEntry.COLUMN_NAME)) {
+            String name = contentValues.getAsString(InventoryEntry.COLUMN_NAME);
+            if (name.equals("")) {
+                throw new IllegalArgumentException("Please enter an item name");
+            }
+        }
+
+        if (contentValues.containsKey(InventoryEntry.COLUMN_PRICE)) {
+            Integer price = contentValues.getAsInteger(InventoryEntry.COLUMN_PRICE);
+            if (price != null && price < 0) {
+                throw new IllegalArgumentException("Please enter a price");
+            }
+        }
+
+        // If there are no values to update, then don't try to update the database
+        if (contentValues.size() == 0) {
+            return 0;
+        }
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int newID = db.update(InventoryEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+
+        return newID;
     }
 }
