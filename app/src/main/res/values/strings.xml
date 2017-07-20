@@ -2,7 +2,7 @@
     <string name="app_name">Inventory App</string>
 
     <!-- Add product button on CatalogActivity -->
-    <string name="add_product">Add Product</string>
+    <string name="add_product">Add</string>
 
     <!-- Label for editor menu option to save pet and leave editor [CHAR LIMIT=20] -->
     <string name="action_save">Save</string>
