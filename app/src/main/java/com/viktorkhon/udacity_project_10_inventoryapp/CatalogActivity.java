@@ -1,21 +1,24 @@
 package com.viktorkhon.udacity_project_10_inventoryapp;
 
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract.InventoryEntry;
-import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryDbHelper;
 
-public class CatalogActivity extends AppCompatActivity {
+public class CatalogActivity extends AppCompatActivity
+implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static InventoryAdapter inventoryAdapter;
+
+    private static final int INV_LOADER = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,17 +33,15 @@ public class CatalogActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        displayDb();
+        ListView invListView = (ListView) findViewById(R.id.list_view);
+        inventoryAdapter = new InventoryAdapter(this, null);
+        invListView.setAdapter(inventoryAdapter);
+
+        getLoaderManager().initLoader(INV_LOADER, null, this);
     }
 
     @Override
-    protected void onStart() {
-    super.onStart();
-    displayDb();
-    }
-
-    private void displayDb() {
-
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = {
                 InventoryEntry.COLUMN_ID,
                 InventoryEntry.COLUMN_NAME,
@@ -48,12 +49,22 @@ public class CatalogActivity extends AppCompatActivity {
                 InventoryEntry.COLUMN_QTY
         };
 
-        Cursor cursor = getContentResolver().query(InventoryEntry.CONTENT_URI,
-                projection, null, null, null);
+        return new CursorLoader(this,
+                InventoryEntry.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null);
+    }
 
-        ListView invListView = (ListView) findViewById(R.id.list_view);
-        inventoryAdapter = new InventoryAdapter(this, cursor);
-        invListView.setAdapter(inventoryAdapter);
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        inventoryAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        inventoryAdapter.swapCursor(null);
     }
 }
 
