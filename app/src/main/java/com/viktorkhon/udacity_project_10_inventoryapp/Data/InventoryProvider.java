@@ -66,6 +66,9 @@ public class InventoryProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
+
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+
         return cursor;
     }
 
@@ -109,6 +112,8 @@ public class InventoryProvider extends ContentProvider {
 
         long id = db.insert(InventoryEntry.TABLE_NAME, null, contentValues);
 
+        getContext().getContentResolver().notifyChange(uri, null);
+
         return ContentUris.withAppendedId(uri, id);
     }
 
@@ -117,16 +122,26 @@ public class InventoryProvider extends ContentProvider {
         // Get writeable database
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
+        int rowsDeleted;
+
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case INVENTORY:
                 // Delete all rows that match the selection and selection args
-                return db.delete(InventoryEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = db.delete(InventoryEntry.TABLE_NAME, selection, selectionArgs);
+                if (rowsDeleted != 0) {
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+                return rowsDeleted;
             case INVENTORY_ID:
                 // Delete a single row given by the ID in the URI
                 selection = InventoryEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return db.delete(InventoryEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = db.delete(InventoryEntry.TABLE_NAME, selection, selectionArgs);
+                if (rowsDeleted != 0) {
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+                return rowsDeleted;
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
         }
@@ -172,6 +187,10 @@ public class InventoryProvider extends ContentProvider {
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         int newID = db.update(InventoryEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+
+        if (newID != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
 
         return newID;
     }
