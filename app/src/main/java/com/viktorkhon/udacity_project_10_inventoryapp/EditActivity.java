@@ -2,7 +2,6 @@ package com.viktorkhon.udacity_project_10_inventoryapp;
 
 import android.app.LoaderManager;
 import android.app.Activity;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -16,6 +15,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -40,14 +40,18 @@ public class EditActivity extends AppCompatActivity
     private static final int INV_LOADER = 1;
 
     TextView addImage;
-    EditText itemName;
-    EditText price;
-    TextView quantity;
+    EditText nameEditText;
+    EditText priceEditText;
+    TextView quantityTextView;
     Button decrease;
     Button increase;
     ImageView mImageView;
 
     Uri currentItemUri;
+
+    Uri imageUri;
+
+    private boolean itemHasChanged;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,12 +59,15 @@ public class EditActivity extends AppCompatActivity
         setContentView(R.layout.activity_editor);
 
         addImage = (TextView) findViewById(R.id.add_image);
-        itemName = (EditText) findViewById(R.id.et_item_name);
-        price = (EditText) findViewById(R.id.et_price);
-        quantity = (TextView) findViewById(R.id.et_quantity);
+        nameEditText = (EditText) findViewById(R.id.et_item_name);
+        priceEditText = (EditText) findViewById(R.id.et_price);
+        quantityTextView = (TextView) findViewById(R.id.et_quantity);
         decrease = (Button) findViewById(R.id.bn_decrease_by_1);
         increase = (Button) findViewById(R.id.bn_increase_by_1);
         mImageView = (ImageView) findViewById(R.id.imageView);
+
+        nameEditText.setOnTouchListener(mOnTouchListener);
+        priceEditText.setOnTouchListener(mOnTouchListener);
 
         Intent intent = getIntent();
         currentItemUri = intent.getData();
@@ -90,13 +97,13 @@ public class EditActivity extends AppCompatActivity
             }
         });
 
-        // Get the value of 'quantity' and convert it to Integer
+        // Get the value of 'quantityTextView' and convert it to Integer
         // Decrease this value by 1 each time a button is pressed
-        // Make sure that the quantity doesn't go below '0'
+        // Make sure that the quantityTextView doesn't go below '0'
         decrease.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int qty = Integer.parseInt(quantity.getText().toString());
+                int qty = Integer.parseInt(quantityTextView.getText().toString());
                 qty--;
                 displayQty(qty);
                 if (qty < 0) {
@@ -105,12 +112,12 @@ public class EditActivity extends AppCompatActivity
             }
         });
 
-        // Get the value of 'quantity' and convert it to Integer
+        // Get the value of 'quantityTextView' and convert it to Integer
         // Increase this value by 1 each time a button is pressed
         increase.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int qty = Integer.parseInt(quantity.getText().toString());
+                int qty = Integer.parseInt(quantityTextView.getText().toString());
                 qty++;
                 displayQty(qty);
             }
@@ -119,12 +126,12 @@ public class EditActivity extends AppCompatActivity
 
     // Displays text to the Qty TextView
     public void displayQty(int qty) {
-        quantity.setText(String.valueOf(qty));
+        quantityTextView.setText(String.valueOf(qty));
     }
 
     private int confirmPrice() {
-        if (price.getText().toString().length() > 0) {
-            return Integer.parseInt(price.getText().toString().trim());
+        if (priceEditText.getText().toString().length() > 0) {
+            return Integer.parseInt(priceEditText.getText().toString().trim());
         }
         return 0;
     }
@@ -132,12 +139,15 @@ public class EditActivity extends AppCompatActivity
     public void insertItem() {
 
         if (currentItemUri == null) {
-            String name = itemName.getText().toString().trim();
+            String nameString = nameEditText.getText().toString().trim();
             int priceInt = confirmPrice();
-            int qtyInt = Integer.parseInt(quantity.getText().toString().trim());
+            int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
+
+            if (nameString.equals("") && priceInt == 0) {
+                return;}
 
             ContentValues values = new ContentValues();
-            values.put(InventoryEntry.COLUMN_NAME, name);
+            values.put(InventoryEntry.COLUMN_NAME, nameString);
             values.put(InventoryEntry.COLUMN_PRICE, priceInt);
             values.put(InventoryEntry.COLUMN_QTY, qtyInt);
 
@@ -149,9 +159,9 @@ public class EditActivity extends AppCompatActivity
                 Toast.makeText(this, "Item saved with id: " + newId, Toast.LENGTH_SHORT).show();
             }
         } else {
-            String name = itemName.getText().toString().trim();
+            String name = nameEditText.getText().toString().trim();
             int priceInt = confirmPrice();
-            int qtyInt = Integer.parseInt(quantity.getText().toString().trim());
+            int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
 
             ContentValues values = new ContentValues();
             values.put(InventoryEntry.COLUMN_NAME, name);
@@ -181,17 +191,10 @@ public class EditActivity extends AppCompatActivity
             // Instead, a URI to that document will be contained in the return intent
             // provided to this method as a parameter.
             // Pull that URI using resultData.getData().
-            Uri uri;
-            InputStream image = null;
             if (resultData != null) {
-                uri = resultData.getData();
-                try {
-                    image = getContentResolver().openInputStream(uri);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                Bitmap selectedImage = BitmapFactory.decodeStream(image);
-                mImageView.setImageBitmap(selectedImage);
+                imageUri = resultData.getData();
+                // Use uri to display image in Image View
+                mImageView.setImageURI(imageUri);
             }
         }
     }
@@ -253,16 +256,26 @@ public class EditActivity extends AppCompatActivity
             int priceInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRICE));
             int quantityInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_QTY));
 
-            itemName.setText(name);
-            price.setText(String.valueOf(priceInt));
-            quantity.setText(String.valueOf(quantityInt));
+            nameEditText.setText(name);
+            priceEditText.setText(String.valueOf(priceInt));
+            quantityTextView.setText(String.valueOf(quantityInt));
          }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        itemName.setText("");
-        price.setText("");
-        quantity.setText("");
+        nameEditText.setText("");
+        priceEditText.setText("");
+        quantityTextView.setText("");
     }
+
+    private View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            itemHasChanged = true;
+            return false;
+        }
+    };
+
+
 }
