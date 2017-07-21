@@ -101,21 +101,11 @@ public class InventoryProvider extends ContentProvider {
 
     private Uri insertItem(Uri uri, ContentValues contentValues) {
 
-        String name = contentValues.getAsString(InventoryEntry.COLUMN_NAME);
-        Integer price = contentValues.getAsInteger(InventoryEntry.COLUMN_PRICE);
-        String image = contentValues.getAsString(InventoryEntry.COLUMN_IMAGE);
-
-        if (!name.equals("") && price != 0) {
-
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         id = db.insert(InventoryEntry.TABLE_NAME, null, contentValues);
 
         getContext().getContentResolver().notifyChange(uri, null);
-
-        } else {
-            Toast.makeText(getContext(), "All inputs are required", Toast.LENGTH_SHORT).show();
-        }
 
         return ContentUris.withAppendedId(uri, id);
     }

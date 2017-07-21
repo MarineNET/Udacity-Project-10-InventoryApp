@@ -136,6 +136,8 @@ public class EditActivity extends AppCompatActivity
         return 0;
     }
 
+    Uri newId;
+
     public void insertItem() {
 
         if (currentItemUri == null) {
@@ -146,11 +148,16 @@ public class EditActivity extends AppCompatActivity
             String imageString = null;
             if (imageUri != null) {
                 imageString = imageUri.toString();
-                finish();
             }
 
+            // Sanity check: If no entries, return to the Catalog screen
             if (nameString.equals("") && priceInt == 0 && imageUri == null) {
-                Toast.makeText(this, "Entry is required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Entry is required", Toast.LENGTH_SHORT).show();
+            finish();}
+
+            // Sanity check: All entries are required. If missing, show a Toast message
+            if (nameString.equals("") || priceInt == 0 || imageUri == null){
+                Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
                 return;}
 
             ContentValues values = new ContentValues();
@@ -159,12 +166,13 @@ public class EditActivity extends AppCompatActivity
             values.put(InventoryEntry.COLUMN_QTY, qtyInt);
             values.put(InventoryEntry.COLUMN_IMAGE, imageString);
 
-            Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
+            newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
 
             if (newId == null) {
                 Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Item saved with id: " + newId, Toast.LENGTH_SHORT).show();
+                finish();
             }
         } else {
             String name = nameEditText.getText().toString().trim();
@@ -184,6 +192,7 @@ public class EditActivity extends AppCompatActivity
                 Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Item saved with id: " + updatedId, Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
     }
@@ -224,7 +233,6 @@ public class EditActivity extends AppCompatActivity
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 insertItem();
-                finish();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
