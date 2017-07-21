@@ -1,13 +1,16 @@
 package com.viktorkhon.udacity_project_10_inventoryapp;
 
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
@@ -33,9 +36,25 @@ implements LoaderManager.LoaderCallbacks<Cursor> {
                 startActivity(intent);
             }
         });
+
         ListView invListView = (ListView) findViewById(R.id.list_view);
+
         inventoryAdapter = new InventoryAdapter(this, null);
         invListView.setAdapter(inventoryAdapter);
+
+        invListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                Intent intent = new Intent(CatalogActivity.this, EditActivity.class);
+
+                Uri currentUri = ContentUris.withAppendedId(InventoryEntry.CONTENT_URI, id);
+
+                intent.setData(currentUri);
+
+                startActivity(intent);
+            }
+        });
 
         getLoaderManager().initLoader(INV_LOADER, null, this);
     }

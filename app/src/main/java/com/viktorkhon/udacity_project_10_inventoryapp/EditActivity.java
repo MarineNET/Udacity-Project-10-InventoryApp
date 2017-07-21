@@ -1,8 +1,13 @@
 package com.viktorkhon.udacity_project_10_inventoryapp;
 
+import android.app.LoaderManager;
 import android.app.Activity;
+import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -20,9 +25,6 @@ import android.widget.Toast;
 
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract.InventoryEntry;
 
-import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract;
-import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryDbHelper;
-
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
@@ -30,9 +32,12 @@ import java.io.InputStream;
  * Created by Viktor Khon on 7/17/2017.
  */
 
-public class EditActivity extends AppCompatActivity{
+public class EditActivity extends AppCompatActivity
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int READ_REQUEST_CODE = 42;
+
+    private static final int INV_LOADER = 1;
 
     TextView addImage;
     EditText itemName;
@@ -54,6 +59,16 @@ public class EditActivity extends AppCompatActivity{
         decrease = (Button) findViewById(R.id.bn_decrease_by_1);
         increase = (Button) findViewById(R.id.bn_increase_by_1);
         mImageView = (ImageView) findViewById(R.id.imageView);
+
+        Intent intent = getIntent();
+        Uri uri = intent.getData();
+
+        if (uri == null) {
+            setTitle("Add new item");
+        } else {
+            setTitle("Edit item");
+            getLoaderManager().initLoader(INV_LOADER, null, this);
+        }
 
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -187,5 +202,20 @@ public class EditActivity extends AppCompatActivity{
             default:
                 return true;
         }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }
