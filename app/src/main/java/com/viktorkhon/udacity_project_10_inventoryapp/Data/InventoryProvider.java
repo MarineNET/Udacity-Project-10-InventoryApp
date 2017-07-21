@@ -7,6 +7,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.widget.Toast;
 
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract;
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract.InventoryEntry;
@@ -96,23 +97,25 @@ public class InventoryProvider extends ContentProvider {
         }
     }
 
+    long id;
+
     private Uri insertItem(Uri uri, ContentValues contentValues) {
 
         String name = contentValues.getAsString(InventoryEntry.COLUMN_NAME);
-        if (name.equals("")) {
-            throw new IllegalArgumentException("Please enter an item name");
-        }
-
         Integer price = contentValues.getAsInteger(InventoryEntry.COLUMN_PRICE);
-        if (price != null && price < 0) {
-            throw new IllegalArgumentException("Please enter a price");
-        }
+        String image = contentValues.getAsString(InventoryEntry.COLUMN_IMAGE);
+
+        if (!name.equals("") && price != 0) {
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        long id = db.insert(InventoryEntry.TABLE_NAME, null, contentValues);
+        id = db.insert(InventoryEntry.TABLE_NAME, null, contentValues);
 
         getContext().getContentResolver().notifyChange(uri, null);
+
+        } else {
+            Toast.makeText(getContext(), "All inputs are required", Toast.LENGTH_SHORT).show();
+        }
 
         return ContentUris.withAppendedId(uri, id);
     }

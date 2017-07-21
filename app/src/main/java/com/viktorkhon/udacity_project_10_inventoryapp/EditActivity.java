@@ -142,16 +142,22 @@ public class EditActivity extends AppCompatActivity
             String nameString = nameEditText.getText().toString().trim();
             int priceInt = confirmPrice();
             int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
-            String image = imageUri.toString();
 
-            if (nameString.equals("") && priceInt == 0) {
+            String imageString = null;
+            if (imageUri != null) {
+                imageString = imageUri.toString();
+                finish();
+            }
+
+            if (nameString.equals("") && priceInt == 0 && imageUri == null) {
+                Toast.makeText(this, "Entry is required", Toast.LENGTH_SHORT).show();
                 return;}
 
             ContentValues values = new ContentValues();
             values.put(InventoryEntry.COLUMN_NAME, nameString);
             values.put(InventoryEntry.COLUMN_PRICE, priceInt);
             values.put(InventoryEntry.COLUMN_QTY, qtyInt);
-            values.put(InventoryEntry.COLUMN_IMAGE, image);
+            values.put(InventoryEntry.COLUMN_IMAGE, imageString);
 
             Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
 
