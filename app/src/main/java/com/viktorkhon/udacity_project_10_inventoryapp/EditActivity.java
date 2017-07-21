@@ -47,6 +47,8 @@ public class EditActivity extends AppCompatActivity
     Button increase;
     ImageView mImageView;
 
+    Uri currentItemUri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,9 +63,9 @@ public class EditActivity extends AppCompatActivity
         mImageView = (ImageView) findViewById(R.id.imageView);
 
         Intent intent = getIntent();
-        Uri uri = intent.getData();
+        currentItemUri = intent.getData();
 
-        if (uri == null) {
+        if (currentItemUri == null) {
             setTitle("Add new item");
         } else {
             setTitle("Edit item");
@@ -128,21 +130,41 @@ public class EditActivity extends AppCompatActivity
     }
 
     public void insertItem() {
-        String name = itemName.getText().toString().trim();
-        int priceInt = confirmPrice();
-        int qtyInt = Integer.parseInt(quantity.getText().toString().trim());
 
-        ContentValues values = new ContentValues();
-        values.put(InventoryEntry.COLUMN_NAME, name);
-        values.put(InventoryEntry.COLUMN_PRICE, priceInt);
-        values.put(InventoryEntry.COLUMN_QTY, qtyInt);
+        if (currentItemUri == null) {
+            String name = itemName.getText().toString().trim();
+            int priceInt = confirmPrice();
+            int qtyInt = Integer.parseInt(quantity.getText().toString().trim());
 
-        Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
+            ContentValues values = new ContentValues();
+            values.put(InventoryEntry.COLUMN_NAME, name);
+            values.put(InventoryEntry.COLUMN_PRICE, priceInt);
+            values.put(InventoryEntry.COLUMN_QTY, qtyInt);
 
-        if (newId == null) {
-            Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+            Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
+
+            if (newId == null) {
+                Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Item saved with id: " + newId, Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(this, "Pet saved with id: " + newId, Toast.LENGTH_SHORT).show();
+            String name = itemName.getText().toString().trim();
+            int priceInt = confirmPrice();
+            int qtyInt = Integer.parseInt(quantity.getText().toString().trim());
+
+            ContentValues values = new ContentValues();
+            values.put(InventoryEntry.COLUMN_NAME, name);
+            values.put(InventoryEntry.COLUMN_PRICE, priceInt);
+            values.put(InventoryEntry.COLUMN_QTY, qtyInt);
+
+            int updatedId = getContentResolver().update(currentItemUri, values, null, null);
+
+            if (updatedId == 0) {
+                Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Item saved with id: " + updatedId, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -214,7 +236,7 @@ public class EditActivity extends AppCompatActivity
         };
 
         return new CursorLoader(this,
-                InventoryEntry.CONTENT_URI,
+                currentItemUri,
                 projection,
                 null,
                 null,
@@ -226,7 +248,7 @@ public class EditActivity extends AppCompatActivity
         if (cursor == null || cursor.getCount() < 1) {
             return;
         }
-        if (cursor.moveToFirst()) {
+        if (cursor.moveToNext()) {
             String name = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_NAME));
             int priceInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRICE));
             int quantityInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_QTY));
