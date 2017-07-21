@@ -39,6 +39,10 @@ implements LoaderManager.LoaderCallbacks<Cursor> {
 
         ListView invListView = (ListView) findViewById(R.id.list_view);
 
+        // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
+        View emptyView = findViewById(R.id.empty_view);
+        invListView.setEmptyView(emptyView);
+
         inventoryAdapter = new InventoryAdapter(this, null);
         invListView.setAdapter(inventoryAdapter);
 
