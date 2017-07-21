@@ -206,16 +206,41 @@ public class EditActivity extends AppCompatActivity
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return null;
+        String[] projection = {
+                InventoryEntry.COLUMN_ID,
+                InventoryEntry.COLUMN_NAME,
+                InventoryEntry.COLUMN_PRICE,
+                InventoryEntry.COLUMN_QTY
+        };
+
+        return new CursorLoader(this,
+                InventoryEntry.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if (cursor == null || cursor.getCount() < 1) {
+            return;
+        }
+        if (cursor.moveToFirst()) {
+            String name = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_NAME));
+            int priceInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRICE));
+            int quantityInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_QTY));
 
+            itemName.setText(name);
+            price.setText(String.valueOf(priceInt));
+            quantity.setText(String.valueOf(quantityInt));
+         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        itemName.setText("");
+        price.setText("");
+        quantity.setText("");
     }
 }
