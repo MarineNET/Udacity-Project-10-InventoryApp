@@ -142,6 +142,7 @@ public class EditActivity extends AppCompatActivity
             String nameString = nameEditText.getText().toString().trim();
             int priceInt = confirmPrice();
             int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
+            String image = imageUri.toString();
 
             if (nameString.equals("") && priceInt == 0) {
                 return;}
@@ -150,6 +151,7 @@ public class EditActivity extends AppCompatActivity
             values.put(InventoryEntry.COLUMN_NAME, nameString);
             values.put(InventoryEntry.COLUMN_PRICE, priceInt);
             values.put(InventoryEntry.COLUMN_QTY, qtyInt);
+            values.put(InventoryEntry.COLUMN_IMAGE, image);
 
             Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
 
@@ -162,11 +164,13 @@ public class EditActivity extends AppCompatActivity
             String name = nameEditText.getText().toString().trim();
             int priceInt = confirmPrice();
             int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
+            String image = imageUri.toString();
 
             ContentValues values = new ContentValues();
             values.put(InventoryEntry.COLUMN_NAME, name);
             values.put(InventoryEntry.COLUMN_PRICE, priceInt);
             values.put(InventoryEntry.COLUMN_QTY, qtyInt);
+            values.put(InventoryEntry.COLUMN_IMAGE, image);
 
             int updatedId = getContentResolver().update(currentItemUri, values, null, null);
 
@@ -235,7 +239,8 @@ public class EditActivity extends AppCompatActivity
                 InventoryEntry.COLUMN_ID,
                 InventoryEntry.COLUMN_NAME,
                 InventoryEntry.COLUMN_PRICE,
-                InventoryEntry.COLUMN_QTY
+                InventoryEntry.COLUMN_QTY,
+                InventoryEntry.COLUMN_IMAGE
         };
 
         return new CursorLoader(this,
@@ -256,9 +261,20 @@ public class EditActivity extends AppCompatActivity
             int priceInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRICE));
             int quantityInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_QTY));
 
+            String imageString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_IMAGE));
+            Uri imageFromString = Uri.parse(imageString);
+            InputStream input = null;
+            try {
+                input = getContentResolver().openInputStream(imageFromString);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            Bitmap selectedImage = BitmapFactory.decodeStream(input);
+
             nameEditText.setText(name);
             priceEditText.setText(String.valueOf(priceInt));
             quantityTextView.setText(String.valueOf(quantityInt));
+            mImageView.setImageBitmap(selectedImage);
          }
     }
 
@@ -267,6 +283,7 @@ public class EditActivity extends AppCompatActivity
         nameEditText.setText("");
         priceEditText.setText("");
         quantityTextView.setText("");
+        mImageView.setImageBitmap(null);
     }
 
     private View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
@@ -276,6 +293,4 @@ public class EditActivity extends AppCompatActivity
             return false;
         }
     };
-
-
 }
