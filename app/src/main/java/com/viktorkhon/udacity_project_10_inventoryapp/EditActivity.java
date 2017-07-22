@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -54,7 +55,7 @@ public class EditActivity extends AppCompatActivity
 
     Uri currentItemUri;
 
-    Uri imageUri;
+    Uri imageUri = null;
 
     private boolean itemHasChanged;
 
@@ -137,81 +138,6 @@ public class EditActivity extends AppCompatActivity
         quantityTextView.setText(String.valueOf(qty));
     }
 
-    private int confirmPrice() {
-        if (priceEditText.getText().toString().length() > 0) {
-            return Integer.parseInt(priceEditText.getText().toString().trim());
-        }
-        return 0;
-    }
-
-    public void insertItem() {
-
-        if (currentItemUri == null) {
-            String nameString = nameEditText.getText().toString().trim();
-            int priceInt = confirmPrice();
-            int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
-
-            String imageString = null;
-            if (imageUri != null) {
-                imageString = imageUri.toString();
-            }
-
-            // Sanity check: If no entries, return to the Catalog screen
-            if (nameString.equals("") && priceInt == 0 && imageUri == null) {
-            Toast.makeText(this, "Entry is required", Toast.LENGTH_SHORT).show();
-            finish();}
-
-            // Sanity check: All entries are required. If missing, show a Toast message
-            if (nameString.equals("") || priceInt == 0 || imageUri == null){
-                Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
-                return;}
-
-            ContentValues values = new ContentValues();
-            values.put(InventoryEntry.COLUMN_NAME, nameString);
-            values.put(InventoryEntry.COLUMN_PRICE, priceInt);
-            values.put(InventoryEntry.COLUMN_QTY, qtyInt);
-            values.put(InventoryEntry.COLUMN_IMAGE, imageString);
-
-            Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
-
-            if (newId == null) {
-                Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Item saved", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        } else {
-            String nameString = nameEditText.getText().toString().trim();
-            int priceInt = confirmPrice();
-            int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
-
-            String imageString = null;
-            if (imageUri != null) {
-                imageString = imageUri.toString();
-            }
-
-            // Sanity check: All entries are required. If missing, show a Toast message
-            if (nameString.equals("") || priceInt == 0 || imageUri == null){
-                Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
-                return;}
-
-            ContentValues values = new ContentValues();
-            values.put(InventoryEntry.COLUMN_NAME, nameString);
-            values.put(InventoryEntry.COLUMN_PRICE, priceInt);
-            values.put(InventoryEntry.COLUMN_QTY, qtyInt);
-            values.put(InventoryEntry.COLUMN_IMAGE, imageString);
-
-            int updatedId = getContentResolver().update(currentItemUri, values, null, null);
-
-            if (updatedId == 0) {
-                Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Item saved", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
@@ -228,6 +154,67 @@ public class EditActivity extends AppCompatActivity
             if (resultData != null) {
                 imageUri = resultData.getData();
                 mImageView.setImageBitmap(getBitmapFromUri(imageUri));
+            }
+        }
+    }
+
+    private int confirmPrice() {
+        if (priceEditText.getText().toString().length() > 0) {
+            return Integer.parseInt(priceEditText.getText().toString().trim());
+        }
+        return 0;
+    }
+
+    public void insertItem() {
+
+        String nameString = nameEditText.getText().toString().trim();
+        int priceInt = confirmPrice();
+        int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
+
+        String imageString = null;
+        if (imageUri != null) {
+            imageString = imageUri.toString();
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(InventoryEntry.COLUMN_NAME, nameString);
+        values.put(InventoryEntry.COLUMN_PRICE, priceInt);
+        values.put(InventoryEntry.COLUMN_QTY, qtyInt);
+        values.put(InventoryEntry.COLUMN_IMAGE, imageString);
+
+        if (currentItemUri == null) {
+
+            // Sanity check: If no entries, return to the Catalog screen
+            if (nameString.equals("") && priceInt == 0 && imageUri == null && qtyInt == 0) {
+            Toast.makeText(this, "Entry is required", Toast.LENGTH_SHORT).show();
+            finish();}
+
+            // Sanity check: All entries are required. If missing, show a Toast message
+            if (nameString.equals("") || priceInt == 0 || imageUri == null){
+                Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
+                return;}
+
+            Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
+
+            if (newId == null) {
+                Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Item saved", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } else {
+            // Sanity check: All entries are required. If missing, show a Toast message
+            if (nameString.equals("") || priceInt == 0 || TextUtils.isEmpty(imageString)) {
+                Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
+                return;}
+
+            int updatedId = getContentResolver().update(currentItemUri, values, null, null);
+
+            if (updatedId == 0) {
+                Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Item saved", Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
     }
@@ -291,6 +278,7 @@ public class EditActivity extends AppCompatActivity
 
             String imageString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_IMAGE));
             Uri savedImageUri = Uri.parse(imageString);
+            Log.v("Edit Activity:", "Current uri is " + savedImageUri);
 
             nameEditText.setText(name);
             priceEditText.setText(String.valueOf(priceInt));
