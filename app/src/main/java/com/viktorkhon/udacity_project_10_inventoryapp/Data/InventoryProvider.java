@@ -97,13 +97,11 @@ public class InventoryProvider extends ContentProvider {
         }
     }
 
-    long id;
-
     private Uri insertItem(Uri uri, ContentValues contentValues) {
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        id = db.insert(InventoryEntry.TABLE_NAME, null, contentValues);
+        long id = db.insert(InventoryEntry.TABLE_NAME, null, contentValues);
 
         getContext().getContentResolver().notifyChange(uri, null);
 
@@ -158,20 +156,6 @@ public class InventoryProvider extends ContentProvider {
 
     private int updateInventory(Uri uri, ContentValues contentValues,
                                 String selection, String[] selectionArgs) {
-
-        if (contentValues.containsKey(InventoryEntry.COLUMN_NAME)) {
-            String name = contentValues.getAsString(InventoryEntry.COLUMN_NAME);
-            if (name.equals("")) {
-                throw new IllegalArgumentException("Please enter an item name");
-            }
-        }
-
-        if (contentValues.containsKey(InventoryEntry.COLUMN_PRICE)) {
-            Integer price = contentValues.getAsInteger(InventoryEntry.COLUMN_PRICE);
-            if (price != null && price < 0) {
-                throw new IllegalArgumentException("Please enter a price");
-            }
-        }
 
         // If there are no values to update, then don't try to update the database
         if (contentValues.size() == 0) {

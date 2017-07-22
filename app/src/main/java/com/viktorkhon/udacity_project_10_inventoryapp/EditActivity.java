@@ -55,7 +55,7 @@ public class EditActivity extends AppCompatActivity
 
     Uri currentItemUri;
 
-    Uri imageUri = null;
+    Uri imageUri;
 
     private boolean itemHasChanged;
 
@@ -277,13 +277,12 @@ public class EditActivity extends AppCompatActivity
             int quantityInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_QTY));
 
             String imageString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_IMAGE));
-            Uri savedImageUri = Uri.parse(imageString);
-            Log.v("Edit Activity:", "Current uri is " + savedImageUri);
+            imageUri = Uri.parse(imageString);
 
             nameEditText.setText(name);
             priceEditText.setText(String.valueOf(priceInt));
             quantityTextView.setText(String.valueOf(quantityInt));
-            mImageView.setImageBitmap(getBitmapFromUri(savedImageUri));
+            mImageView.setImageBitmap(getBitmapFromUri(imageUri));
          }
     }
 
