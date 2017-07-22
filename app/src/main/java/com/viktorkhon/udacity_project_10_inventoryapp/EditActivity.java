@@ -10,9 +10,11 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -26,6 +28,7 @@ import android.widget.Toast;
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract.InventoryEntry;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -38,6 +41,8 @@ public class EditActivity extends AppCompatActivity
     private static final int READ_REQUEST_CODE = 42;
 
     private static final int INV_LOADER = 1;
+
+    public static final String LOG_TAG = EditActivity.class.getSimpleName();
 
     TextView addImage;
     EditText nameEditText;
@@ -84,11 +89,14 @@ public class EditActivity extends AppCompatActivity
             public void onClick(View view) {
                     // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
                     // browser.
-                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    Intent intent;
 
-                    // Filter to only show results that can be "opened", such as a
-                    // file (as opposed to a list of contacts or timezones)
+                    if (Build.VERSION.SDK_INT < 19) {
+                    intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    } else {
+                    intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    }
 
                     // Filter to show only images, using the image MIME data type.
                     intent.setType("image/*");
@@ -136,8 +144,6 @@ public class EditActivity extends AppCompatActivity
         return 0;
     }
 
-    Uri newId;
-
     public void insertItem() {
 
         if (currentItemUri == null) {
@@ -166,32 +172,41 @@ public class EditActivity extends AppCompatActivity
             values.put(InventoryEntry.COLUMN_QTY, qtyInt);
             values.put(InventoryEntry.COLUMN_IMAGE, imageString);
 
-            newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
+            Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
 
             if (newId == null) {
                 Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Item saved with id: " + newId, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Item saved", Toast.LENGTH_SHORT).show();
                 finish();
             }
         } else {
-            String name = nameEditText.getText().toString().trim();
+            String nameString = nameEditText.getText().toString().trim();
             int priceInt = confirmPrice();
             int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
-            String image = imageUri.toString();
+
+            String imageString = null;
+            if (imageUri != null) {
+                imageString = imageUri.toString();
+            }
+
+            // Sanity check: All entries are required. If missing, show a Toast message
+            if (nameString.equals("") || priceInt == 0 || imageUri == null){
+                Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
+                return;}
 
             ContentValues values = new ContentValues();
-            values.put(InventoryEntry.COLUMN_NAME, name);
+            values.put(InventoryEntry.COLUMN_NAME, nameString);
             values.put(InventoryEntry.COLUMN_PRICE, priceInt);
             values.put(InventoryEntry.COLUMN_QTY, qtyInt);
-            values.put(InventoryEntry.COLUMN_IMAGE, image);
+            values.put(InventoryEntry.COLUMN_IMAGE, imageString);
 
             int updatedId = getContentResolver().update(currentItemUri, values, null, null);
 
             if (updatedId == 0) {
                 Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Item saved with id: " + updatedId, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Item saved", Toast.LENGTH_SHORT).show();
                 finish();
             }
         }
@@ -212,8 +227,7 @@ public class EditActivity extends AppCompatActivity
             // Pull that URI using resultData.getData().
             if (resultData != null) {
                 imageUri = resultData.getData();
-                // Use uri to display image in Image View
-                mImageView.setImageURI(imageUri);
+                mImageView.setImageBitmap(getBitmapFromUri(imageUri));
             }
         }
     }
@@ -276,19 +290,12 @@ public class EditActivity extends AppCompatActivity
             int quantityInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_QTY));
 
             String imageString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_IMAGE));
-            Uri imageFromString = Uri.parse(imageString);
-            InputStream input = null;
-            try {
-                input = getContentResolver().openInputStream(imageFromString);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            Bitmap selectedImage = BitmapFactory.decodeStream(input);
+            Uri savedImageUri = Uri.parse(imageString);
 
             nameEditText.setText(name);
             priceEditText.setText(String.valueOf(priceInt));
             quantityTextView.setText(String.valueOf(quantityInt));
-            mImageView.setImageBitmap(selectedImage);
+            mImageView.setImageBitmap(getBitmapFromUri(savedImageUri));
          }
     }
 
@@ -307,4 +314,54 @@ public class EditActivity extends AppCompatActivity
             return false;
         }
     };
+
+    // Code provided by Forum Mentor at Udacity sudhirkhanger
+    public Bitmap getBitmapFromUri(Uri uri) {
+
+        if (uri == null || uri.toString().isEmpty())
+            return null;
+
+        // Get the dimensions of the View
+        int targetW = mImageView.getWidth();
+        int targetH = mImageView.getHeight();
+
+        InputStream input = null;
+        try {
+            input = this.getContentResolver().openInputStream(uri);
+
+            // Get the dimensions of the bitmap
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(input, null, bmOptions);
+            input.close();
+
+            // Get the dimensions of the View
+            int photoW = bmOptions.outWidth;
+            int photoH = bmOptions.outHeight;
+
+            // Determine how much to scale down the image
+            int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+
+            // Decode the image file into a Bitmap sized to fill the View
+            bmOptions.inJustDecodeBounds = false;
+            bmOptions.inSampleSize = scaleFactor;
+
+            input = this.getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(input, null, bmOptions);
+            input.close();
+            return bitmap;
+
+        } catch (FileNotFoundException fne) {
+            Log.e(LOG_TAG, "Failed to load image.", fne);
+            return null;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Failed to load image.", e);
+            return null;
+        } finally {
+            try {
+                input.close();
+            } catch (IOException ioe) {
+            }
+        }
+    }
 }
