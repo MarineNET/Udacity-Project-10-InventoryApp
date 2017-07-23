@@ -49,7 +49,7 @@ public class InventoryAdapter extends CursorAdapter {
 
         // Take out the value of each column and store it in a variable
         String name = cursor.getString(cursor.getColumnIndexOrThrow(InventoryEntry.COLUMN_NAME));
-        double quantity = cursor.getDouble(cursor.getColumnIndexOrThrow(InventoryEntry.COLUMN_QTY));
+        int quantity = cursor.getInt(cursor.getColumnIndexOrThrow(InventoryEntry.COLUMN_QTY));
         double price = cursor.getDouble(cursor.getColumnIndexOrThrow(InventoryEntry.COLUMN_PRICE));
 
         // Assign a value extracted from the table to corresponding View in the ListView
