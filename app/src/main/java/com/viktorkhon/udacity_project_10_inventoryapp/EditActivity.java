@@ -56,6 +56,7 @@ public class EditActivity extends AppCompatActivity
     TextView quantityTextView;
     Button decrease;
     Button increase;
+    Button order;
     ImageView mImageView;
 
     // Uri received from CatalogActivity
@@ -78,6 +79,7 @@ public class EditActivity extends AppCompatActivity
         quantityTextView = (TextView) findViewById(R.id.et_quantity);
         decrease = (Button) findViewById(R.id.bn_decrease_by_1);
         increase = (Button) findViewById(R.id.bn_increase_by_1);
+        order = (Button) findViewById(R.id.bn_order);
         mImageView = (ImageView) findViewById(R.id.imageView);
 
         // Attach listeners to each View that we want to monitor for change to display a message
@@ -94,6 +96,7 @@ public class EditActivity extends AppCompatActivity
         // Otherwise it is an existent item, so change the name of the Activity to "Edit item"
         if (currentItemUri == null) {
             setTitle("Add new item");
+            invalidateOptionsMenu();
         } else {
             setTitle("Edit item");
             // Start Loader Manager
@@ -146,6 +149,18 @@ public class EditActivity extends AppCompatActivity
                 int qty = Integer.parseInt(quantityTextView.getText().toString());
                 qty++;
                 displayQty(qty);
+            }
+        });
+
+        order.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_SENDTO);
+                intent.setData(Uri.parse("mailto:"));
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Order more product");
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                }
             }
         });
     }
@@ -227,15 +242,6 @@ public class EditActivity extends AppCompatActivity
         }
     }
 
-    // Inflate Options Menu
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu options from the res/menu/menu_editor.xml file.
-        // This adds menu items to the app bar.
-        getMenuInflater().inflate(R.menu.menu_edit, menu);
-        return true;
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // User clicked on a menu option in the app bar overflow menu
@@ -246,11 +252,11 @@ public class EditActivity extends AppCompatActivity
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
-                // do nothing
+                showDeleteConfirmationDialog();
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
-                // If the pet hasn't changed, continue with navigating up to parent activity
+                // If the item hasn't changed, continue with navigating up to parent activity
                 // which is the {@link CatalogActivity}.
                 if (!itemHasChanged) {
                     NavUtils.navigateUpFromSameTask(EditActivity.this);
@@ -274,6 +280,25 @@ public class EditActivity extends AppCompatActivity
             default:
                 return true;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu options from the res/menu/menu_edit.xml file.
+        // This adds menu items to the app bar.
+        getMenuInflater().inflate(R.menu.menu_edit, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        // If this is a new item, hide the "Delete" menu item.
+        if (currentItemUri == null) {
+            MenuItem menuItem = menu.findItem(R.id.action_delete);
+            menuItem.setVisible(false);
+        }
+        return true;
     }
 
     // Create Loader method that performs Async functions to query database
@@ -374,7 +399,7 @@ public class EditActivity extends AppCompatActivity
         builder.setNegativeButton(R.string.keep_editing, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User clicked the "Keep editing" button, so dismiss the dialog
-                // and continue editing the pet.
+                // and continue editing the item.
                 if (dialog != null) {
                     dialog.dismiss();
                 }
@@ -388,7 +413,7 @@ public class EditActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        // If the pet hasn't changed, continue with handling back button press
+        // If the item hasn't changed, continue with handling back button press
         if (!itemHasChanged) {
             super.onBackPressed();
             return;
@@ -407,6 +432,53 @@ public class EditActivity extends AppCompatActivity
 
         // Show dialog that there are unsaved changes
         showUnsavedChangesDialog(discardButtonClickListener);
+    }
+
+    private void showDeleteConfirmationDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the postivie and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_dialog_msg);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Delete" button, so delete the item.
+                deleteItem();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                // and continue editing the item.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * Perform the deletion of the item in the database.
+     */
+    private void deleteItem() {
+        if (currentItemUri != null) {
+            int rowsDeleted = getContentResolver().delete(currentItemUri, null, null);
+            // Show a toast message depending on whether or not the delete was successful.
+            if (rowsDeleted == 0) {
+                // If no rows were deleted, then there was an error with the delete.
+                Toast.makeText(this, getString(R.string.editor_delete_item_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the delete was successful and we can display a toast.
+                Toast.makeText(this, getString(R.string.editor_delete_item_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+        // Close the activity
+        finish();
     }
 
     // Code provided by Forum Mentor at Udacity sudhirkhanger

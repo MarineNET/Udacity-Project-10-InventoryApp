@@ -107,10 +107,10 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/bn_order"
         android:layout_width="match_parent"
         android:layout_height="32dp"
-        android:text="Button"
+        android:text="Order More"
         android:layout_weight="0.33"/>
 
 </LinearLayout>
