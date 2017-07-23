@@ -246,9 +246,9 @@ public class EditActivity extends AppCompatActivity
 
     // Check if the priceEditText field is empty. If so, return 0 as default
     // Otherwise use this number
-    private int confirmPrice() {
+    private double confirmPrice() {
         if (priceEditText.getText().toString().length() > 0) {
-            return Integer.parseInt(priceEditText.getText().toString().trim());
+            return Double.parseDouble(priceEditText.getText().toString().trim());
         }
         return 0;
     }
@@ -258,7 +258,7 @@ public class EditActivity extends AppCompatActivity
 
         // Get appropriate values from UI and store them in a variable
         String nameString = nameEditText.getText().toString().trim();
-        int priceInt = confirmPrice();
+        double priceDbl = confirmPrice();
         int qtyInt = Integer.parseInt(quantityTextView.getText().toString().trim());
 
         // Get Uri of an image that a user chooses and store it as a String
@@ -271,7 +271,7 @@ public class EditActivity extends AppCompatActivity
         // as a String
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_NAME, nameString);
-        values.put(InventoryEntry.COLUMN_PRICE, priceInt);
+        values.put(InventoryEntry.COLUMN_PRICE, priceDbl);
         values.put(InventoryEntry.COLUMN_QTY, qtyInt);
         values.put(InventoryEntry.COLUMN_IMAGE, imageString);
 
@@ -279,12 +279,12 @@ public class EditActivity extends AppCompatActivity
         if (currentItemUri == null) {
 
             // Sanity check: If no entries, return to the Catalog screen
-            if (nameString.equals("") && priceInt == 0 && imageUri == null && qtyInt == 0) {
+            if (nameString.equals("") && priceDbl == 0 && imageUri == null && qtyInt == 0) {
             Toast.makeText(this, "Entry is required", Toast.LENGTH_SHORT).show();
             finish();}
 
             // Sanity check: All entries are required. If missing, show a Toast message
-            if (nameString.equals("") || priceInt == 0 || imageUri == null){
+            if (nameString.equals("") || priceDbl == 0 || imageUri == null){
                 Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
                 return;}
 
@@ -300,7 +300,7 @@ public class EditActivity extends AppCompatActivity
             // If an existing item being saved, use this method
         } else {
             // Sanity check: All entries are required. If missing, show a Toast message
-            if (nameString.equals("") || priceInt == 0 || TextUtils.isEmpty(imageString)) {
+            if (nameString.equals("") || priceDbl == 0 || TextUtils.isEmpty(imageString)) {
                 Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
                 return;}
 
@@ -408,7 +408,7 @@ public class EditActivity extends AppCompatActivity
         // (This should be the only row in the cursor)
         if (cursor.moveToNext()) {
             String name = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_NAME));
-            int priceInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRICE));
+            double priceDbl = cursor.getDouble(cursor.getColumnIndex(InventoryEntry.COLUMN_PRICE));
             int quantityInt = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_QTY));
 
             // Get a String of an image from the database and convert it back to Uri
@@ -418,7 +418,7 @@ public class EditActivity extends AppCompatActivity
 
             // Set appropriate values to each view and display them back
             nameEditText.setText(name);
-            priceEditText.setText(String.valueOf(priceInt));
+            priceEditText.setText(String.valueOf(priceDbl));
             quantityTextView.setText(String.valueOf(quantityInt));
             mImageView.setImageBitmap(getBitmapFromUri(imageUri));
          }
