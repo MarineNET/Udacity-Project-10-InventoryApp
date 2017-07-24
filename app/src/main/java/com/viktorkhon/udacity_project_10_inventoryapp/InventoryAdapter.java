@@ -66,7 +66,6 @@ public class InventoryAdapter extends CursorAdapter {
             public void onClick(View view) {
                 ContentValues values = new ContentValues();
 
-                Uri uri = null;
                 // Upon click, get cursor of the specified position
                 cursor.moveToPosition(position);
                 // get _id number of _ID column
@@ -82,7 +81,7 @@ public class InventoryAdapter extends CursorAdapter {
                         quantity = 0;
                     }
 
-                // create a new value for the quatity column and add the updated number to the column
+                // create a new value for the quantity column and add the updated number to the column
                 values.put(InventoryEntry.COLUMN_QTY, quantity);
                 // Update the table with the new quantity value
                 view.getContext().getContentResolver().update(idToChange, values, null, null);
