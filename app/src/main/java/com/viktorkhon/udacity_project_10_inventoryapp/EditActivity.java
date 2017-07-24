@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -95,10 +96,10 @@ public class EditActivity extends AppCompatActivity
         // If there is no Uri being passed, then set a name for this Activity as "Add new item"
         // Otherwise it is an existent item, so change the name of the Activity to "Edit item"
         if (currentItemUri == null) {
-            setTitle("Add new item");
+            setTitle(R.string.add_new_item);
             invalidateOptionsMenu();
         } else {
-            setTitle("Edit item");
+            setTitle(R.string.edit_edit_item);
             // Start Loader Manager
             getLoaderManager().initLoader(INV_LOADER, null, this);
         }
@@ -157,7 +158,9 @@ public class EditActivity extends AppCompatActivity
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_SENDTO);
                 intent.setData(Uri.parse("mailto:"));
-                intent.putExtra(Intent.EXTRA_SUBJECT, "Order more product");
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Order more product " +
+                        nameEditText.getText().toString().trim());
+                intent.putExtra(Intent.EXTRA_TEXT, emailMessage());
                 if (intent.resolveActivity(getPackageManager()) != null) {
                     startActivity(intent);
                 }
@@ -209,10 +212,8 @@ public class EditActivity extends AppCompatActivity
             return bitmap;
 
         } catch (FileNotFoundException fne) {
-            Log.e(LOG_TAG, "Failed to load image.", fne);
             return null;
         } catch (Exception e) {
-            Log.e(LOG_TAG, "Failed to load image.", e);
             return null;
         } finally {
             try {
@@ -239,10 +240,11 @@ public class EditActivity extends AppCompatActivity
             if (resultData != null) {
                 imageUri = resultData.getData();
                 // Set the image to ImageView as Bitmap using getBitmapFromUri() method
-                mImageView.setImageBitmap(getBitmapFromUri(imageUri));
+                        mImageView.setImageBitmap(getBitmapFromUri(imageUri));
             }
         }
     }
+
 
     // Check if the priceEditText field is empty. If so, return 0 as default
     // Otherwise use this number
@@ -280,37 +282,37 @@ public class EditActivity extends AppCompatActivity
 
             // Sanity check: If no entries, return to the Catalog screen
             if (nameString.equals("") && priceDbl == 0 && imageUri == null && qtyInt == 0) {
-            Toast.makeText(this, "Entry is required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.entry_required, Toast.LENGTH_SHORT).show();
             finish();}
 
             // Sanity check: All entries are required. If missing, show a Toast message
             if (nameString.equals("") || priceDbl == 0 || imageUri == null){
-                Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.all_entries_required, Toast.LENGTH_SHORT).show();
                 return;}
 
             // New Uri ID for an item that is being saved
             Uri newId = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
 
             if (newId == null) {
-                Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.error_with_save, Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Item saved", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.save_success, Toast.LENGTH_SHORT).show();
                 finish();
             }
             // If an existing item being saved, use this method
         } else {
             // Sanity check: All entries are required. If missing, show a Toast message
             if (nameString.equals("") || priceDbl == 0 || TextUtils.isEmpty(imageString)) {
-                Toast.makeText(this, "All entries are required", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.all_entries_required, Toast.LENGTH_SHORT).show();
                 return;}
 
             // After update is successful, get the number of rows as int that have been updated
             int updatedId = getContentResolver().update(currentItemUri, values, null, null);
 
             if (updatedId == 0) {
-                Toast.makeText(this, "Error with saving item", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.error_with_save, Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Item saved", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.save_success, Toast.LENGTH_SHORT).show();
                 finish();
             }
         }
@@ -420,8 +422,18 @@ public class EditActivity extends AppCompatActivity
             nameEditText.setText(name);
             priceEditText.setText(String.valueOf(priceDbl));
             quantityTextView.setText(String.valueOf(quantityInt));
-            mImageView.setImageBitmap(getBitmapFromUri(imageUri));
-         }
+
+            // Use viewTreeObserver to make sure all images inflate when the global layout
+            // state or the visibility changes
+            ViewTreeObserver viewTreeObserver = mImageView.getViewTreeObserver();
+            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    mImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    mImageView.setImageBitmap(getBitmapFromUri(imageUri));
+                }
+            });
+        }
     }
 
     @Override
@@ -531,5 +543,17 @@ public class EditActivity extends AppCompatActivity
         }
         // Close the activity
         finish();
+    }
+
+    private String emailMessage()  {
+        Cursor cursor = null;
+        String message = "New order for " +
+                nameEditText.getText().toString().trim() +
+                "\ncurrent price is: " +
+                priceEditText.getText().toString().length() +
+                "\ncurrent quantity is: " +
+                Integer.parseInt(quantityTextView.getText().toString().trim()) +
+                "\nRequest for addiotional quantities: ";
+                return message;
     }
 }
