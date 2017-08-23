@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -28,6 +27,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import butterknife.InjectView;
+import butterknife.ButterKnife;
 
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract.InventoryEntry;
 
@@ -50,15 +52,14 @@ public class EditActivity extends AppCompatActivity
 
     private static final String LOG_TAG = EditActivity.class.getSimpleName();
 
-    // Give global names to each Button and a View in this layout
-    Button addImage;
-    EditText nameEditText;
-    EditText priceEditText;
-    TextView quantityTextView;
-    Button decrease;
-    Button increase;
-    Button order;
-    ImageView mImageView;
+    // Give global names to each Button and a View in this layout using ButterKnife library
+    @InjectView(R.id.et_item_name) EditText nameEditText;
+    @InjectView(R.id.et_price) EditText priceEditText;
+    @InjectView(R.id.et_quantity) TextView quantityTextView;
+    @InjectView(R.id.bn_decrease_by_1) Button decrease;
+    @InjectView(R.id.bn_increase_by_1) Button increase;
+    @InjectView(R.id.bn_order) Button order;
+    @InjectView(R.id.imageView) ImageView mImageView;
 
     // Uri received from CatalogActivity
     Uri currentItemUri;
@@ -73,15 +74,8 @@ public class EditActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
-        // Initialize each view
-        addImage = (Button) findViewById(R.id.add_image);
-        nameEditText = (EditText) findViewById(R.id.et_item_name);
-        priceEditText = (EditText) findViewById(R.id.et_price);
-        quantityTextView = (TextView) findViewById(R.id.et_quantity);
-        decrease = (Button) findViewById(R.id.bn_decrease_by_1);
-        increase = (Button) findViewById(R.id.bn_increase_by_1);
-        order = (Button) findViewById(R.id.bn_order);
-        mImageView = (ImageView) findViewById(R.id.imageView);
+        // Instantiate ButterKnife library by calling inject() on ButterKnife object
+        ButterKnife.inject(this);
 
         // Attach listeners to each View that we want to monitor for change to display a message
         nameEditText.setOnTouchListener(mOnTouchListener);
@@ -106,7 +100,7 @@ public class EditActivity extends AppCompatActivity
 
         // Add a click listener to the Button. Upon click, start an intent and open a document
         // That only contains images
-        addImage.setOnClickListener(new View.OnClickListener() {
+        mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                     // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file

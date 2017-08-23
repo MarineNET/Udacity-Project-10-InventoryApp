@@ -33,17 +33,11 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="240dp"
+        android:layout_width="275dp"
         android:layout_height="240dp"
         android:layout_gravity="center"
-        app:srcCompat="@mipmap/ic_launcher"/>
-
-    <Button
-        android:id="@+id/add_image"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/button_add_image"
-        android:textSize="24sp"/>
+        app:srcCompat="@drawable/camerabuttonwhite"
+        android:layout_weight="0.17"/>
 
         <LinearLayout
         android:layout_width="match_parent"

@@ -14,6 +14,9 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import butterknife.InjectView;
+import butterknife.ButterKnife;
+
 import com.viktorkhon.udacity_project_10_inventoryapp.Data.InventoryContract.InventoryEntry;
 
 public class CatalogActivity extends AppCompatActivity
@@ -23,13 +26,17 @@ implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int INV_LOADER = 1;
 
+    @InjectView(R.id.addProduct) Button addProduct;
+    @InjectView(R.id.empty_view) View emptyView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
 
+        ButterKnife.inject(this);
+
         // Make button open new Activity to add product
-        Button addProduct = (Button)findViewById(R.id.addProduct);
         addProduct.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -42,7 +49,6 @@ implements LoaderManager.LoaderCallbacks<Cursor> {
         ListView invListView = (ListView) findViewById(R.id.list_view);
 
         // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
-        View emptyView = findViewById(R.id.empty_view);
         invListView.setEmptyView(emptyView);
 
         // Initialize adapter and set it to the ListView
